@@ -25,6 +25,6 @@ namespace ProMongoRepository
         void Remove(ObjectId id);
         IEnumerable<TYMappedType> MapReduce<TYMappedType>(string map, string reduce, string outputCollectioName);
         ConnectionStringBuilder ConnectionString { get; set; }
-        string Collection { get; set; }
+        string CollectionName { get; set; }
     }
 }

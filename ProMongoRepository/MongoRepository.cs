@@ -18,23 +18,35 @@ namespace ProMongoRepository
         {
             if (!string.IsNullOrEmpty(collection))
             {
-                Collection = collection;
-            } 
+                CollectionName = collection;
+            }
             else
             {
-                Collection = (IsSubClassOfMongoRepository()) ? GetBaseTypeGenericArgument(GetType()).Name : GetType().GetGenericArguments()[0].Name;
+                if (IsSubClassOfMongoRepository())
+                {
+                    CollectionName = GetBaseTypeGenericArgument(GetType()).Name;
+                }
+                else
+                {
+                    CollectionName = GetType().GetGenericArguments()[0].Name;
+                }
             }
         }
 
         public static Type GetBaseTypeGenericArgument(Type type)
         {
-            return (type.BaseType != null) ? type.BaseType.GetGenericArguments()[0] : null ;
+            return (type.BaseType != null) ? type.BaseType.GetGenericArguments()[0] : null;
         }
 
         private bool IsSubClassOfMongoRepository()
         {
-            var rawGeneric = typeof (MongoRepository<>);
+            var rawGeneric = typeof(MongoRepository<>);
             var subclass = GetType();
+            Console.WriteLine(subclass.Name);
+            if(subclass.Name == "MongoRepository`1")
+            {
+                return false;
+            }
             while (subclass != typeof(object))
             {
                 var cur = subclass.IsGenericType ? subclass.GetGenericTypeDefinition() : subclass;
@@ -47,9 +59,9 @@ namespace ProMongoRepository
             return false;
         }
 
-        public ObjectId Id { get; set; }
+        //public ObjectId Id { get; set; }
 
-        public string Collection { get; set; }
+        public string CollectionName { get; set; }
 
         public ConnectionStringBuilder ConnectionString { get; set; }
 
@@ -58,7 +70,7 @@ namespace ProMongoRepository
 
             using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
             {
-                mongo.GetCollection<T>(Collection).Save(instance);
+                mongo.GetCollection<T>(CollectionName).Save(instance);
             }
         }
 
@@ -66,7 +78,7 @@ namespace ProMongoRepository
         {
             using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
             {
-                mongo.GetCollection<T>(Collection).Save(this as T);
+                mongo.GetCollection<T>(CollectionName).Save(this as T);
             }
         }
 
@@ -74,7 +86,7 @@ namespace ProMongoRepository
         {
             using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
             {
-                mongo.GetCollection<T>(Collection).UpdateOne(spec, newValues);
+                mongo.GetCollection<T>(CollectionName).UpdateOne(spec, newValues);
             }
         }
 
@@ -82,7 +94,7 @@ namespace ProMongoRepository
         {
             using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
             {
-                mongo.GetCollection<T>(Collection).Update(spec, newValues, true, upsert);
+                mongo.GetCollection<T>(CollectionName).Update(spec, newValues, true, upsert);
             }
         }
 
@@ -90,7 +102,7 @@ namespace ProMongoRepository
         {
             using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
             {
-                return mongo.GetCollection<T>(Collection).FindOne(new { _id = id });
+                return mongo.GetCollection<T>(CollectionName).FindOne(new { _id = id });
             }
         }
 
@@ -103,7 +115,7 @@ namespace ProMongoRepository
         {
             using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
             {
-                return mongo.GetCollection<T>(Collection).FindOne(spec);
+                return mongo.GetCollection<T>(CollectionName).FindOne(spec);
             }
         }
 
@@ -111,7 +123,7 @@ namespace ProMongoRepository
         {
             using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
             {
-                return Enumerable.FirstOrDefault<T>(mongo.GetCollection<T>(Collection).AsQueryable().Where(func));
+                return Enumerable.FirstOrDefault<T>(mongo.GetCollection<T>(CollectionName).AsQueryable().Where(func));
             }
         }
 
@@ -119,7 +131,7 @@ namespace ProMongoRepository
         {
             using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
             {
-                var found = mongo.GetCollection<T>(Collection).Find(spec);
+                var found = mongo.GetCollection<T>(CollectionName).Find(spec);
                 foreach (var item in found)
                 {
 
@@ -132,7 +144,7 @@ namespace ProMongoRepository
         {
             using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
             {
-                return mongo.GetCollection<TY>(Collection).Distinct<object>(property);
+                return mongo.GetCollection<TY>(CollectionName).Distinct<object>(property);
             }
         }
 
@@ -140,7 +152,7 @@ namespace ProMongoRepository
         {
             using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
             {
-                return mongo.GetCollection<T>(Collection).Find(spec);
+                return mongo.GetCollection<T>(CollectionName).Find(spec);
             }
         }
 
@@ -148,7 +160,7 @@ namespace ProMongoRepository
         {
             using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
             {
-                return Enumerable.Where(mongo.GetCollection<T>(Collection).AsQueryable(), func);
+                return Enumerable.Where(mongo.GetCollection<T>(CollectionName).AsQueryable(), func);
             }
         }
 
@@ -156,7 +168,7 @@ namespace ProMongoRepository
         {
             using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
             {
-                var result = mongo.GetCollection<T>(Collection).AsQueryable();
+                var result = mongo.GetCollection<T>(CollectionName).AsQueryable();
                 return result;
             }
         }
@@ -165,7 +177,7 @@ namespace ProMongoRepository
         {
             using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
             {
-                mongo.GetCollection<T>(Collection).Delete(new { });
+                mongo.GetCollection<T>(CollectionName).Delete(new { });
             }
         }
 
@@ -174,7 +186,7 @@ namespace ProMongoRepository
             using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
             {
                 var item = Find(spec);
-                mongo.GetCollection<T>(Collection).Delete(item);
+                mongo.GetCollection<T>(CollectionName).Delete(item);
             }
         }
 
@@ -187,7 +199,7 @@ namespace ProMongoRepository
         {
             using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
             {
-                mongo.GetCollection<T>(Collection).Delete(new { id = id });
+                mongo.GetCollection<T>(CollectionName).Delete(new { id = id });
             }
         }
 
@@ -196,7 +208,7 @@ namespace ProMongoRepository
             using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
             {
                 MapReduce mapReduce = mongo.Database.CreateMapReduce();
-                mapReduce.Execute(new MapReduceOptions(Collection)
+                mapReduce.Execute(new MapReduceOptions(CollectionName)
                                       {
                                           Map = map,
                                           Reduce = reduce,

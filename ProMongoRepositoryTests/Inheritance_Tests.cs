@@ -13,7 +13,7 @@ namespace ProMongoRepositoryTests
         public void Repository_Should_Have_Correct_Collection_Type()
         {
             var repository = new UserRepository();
-            repository.Collection.Should().Be("User");
+            repository.CollectionName.Should().Be("User");
 
         }
 
@@ -23,7 +23,7 @@ namespace ProMongoRepositoryTests
             var repository = new UserRepository();
             var user = new User {Name = "Base_Inheritance_Save"};
             repository.Save(user);
-            repository.Collection.Should().Be("User");
+            repository.CollectionName.Should().Be("User");
         }
     }
 }

@@ -44,10 +44,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConfigurationManagerWrapper.cs" />
     <Compile Include="ConfigurationParser.cs" />
+    <Compile Include="IConfigurationManager.cs" />
     <Compile Include="IMongoRepository.cs" />
-    <Compile Include="IOptionsContainer.cs" />
-    <Compile Include="MongoConfig.cs" />
     <Compile Include="MongoRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
