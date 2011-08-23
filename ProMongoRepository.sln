@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProMongoRepository", "ProMongoRepository\ProMongoRepository.csproj", "{B489910D-C41A-4075-A6B0-92995B2A2744}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProMongoRepositoryTests", "ProMongoRepositoryTests\ProMongoRepositoryTests.csproj", "{7C4CA041-4E8E-4666-AE1A-3CCADA6D07E5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B489910D-C41A-4075-A6B0-92995B2A2744}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B489910D-C41A-4075-A6B0-92995B2A2744}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B489910D-C41A-4075-A6B0-92995B2A2744}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B489910D-C41A-4075-A6B0-92995B2A2744}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C4CA041-4E8E-4666-AE1A-3CCADA6D07E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C4CA041-4E8E-4666-AE1A-3CCADA6D07E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C4CA041-4E8E-4666-AE1A-3CCADA6D07E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C4CA041-4E8E-4666-AE1A-3CCADA6D07E5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
