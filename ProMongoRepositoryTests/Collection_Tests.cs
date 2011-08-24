@@ -5,7 +5,7 @@ using SharpTestsEx;
 
 namespace ProMongoRepositoryTests
 {
-      [TestFixture]
+    [TestFixture]
     public class Collection_Tests
     {
 

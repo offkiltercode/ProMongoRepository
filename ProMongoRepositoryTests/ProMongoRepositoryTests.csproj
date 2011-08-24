@@ -61,6 +61,7 @@
   <ItemGroup>
     <Compile Include="Collection_Tests.cs" />
     <Compile Include="Configuration_Tests.cs" />
+    <Compile Include="Examples.cs" />
     <Compile Include="Inheritance_Tests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestModel\Entity.cs" />
