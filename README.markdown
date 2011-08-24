@@ -14,3 +14,4 @@ ProMongoRepository sits on top of Norm and provides a simple repository pattern.
             mongoRepository.Save(user);
         }
 
+More [Examples](https://github.com/detroitpro/ProMongoRepository/blob/master/ProMongoRepositoryTests/Examples.cs)
