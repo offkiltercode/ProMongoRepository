@@ -31,8 +31,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Norm">
-      <HintPath>..\packages\NoRM.0.9.8\lib\Norm.dll</HintPath>
+    <Reference Include="FluentMongo">
+      <HintPath>..\packages\FluentMongo.1.3.1.1\lib\FluentMongo.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Bson">
+      <HintPath>..\packages\mongocsharpdriver.1.3.1\lib\net35\MongoDB.Bson.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Driver">
+      <HintPath>..\packages\mongocsharpdriver.1.3.1\lib\net35\MongoDB.Driver.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
@@ -46,10 +52,13 @@
   <ItemGroup>
     <Compile Include="ConfigurationManagerWrapper.cs" />
     <Compile Include="ConfigurationParser.cs" />
+    <Compile Include="ConnectionStringBuilder.cs" />
     <Compile Include="IConfigurationManager.cs" />
     <Compile Include="IMongoRepository.cs" />
+    <Compile Include="IOptionsContainer.cs" />
     <Compile Include="MongoRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Server.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

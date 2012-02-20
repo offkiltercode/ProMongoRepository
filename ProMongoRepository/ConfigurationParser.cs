@@ -1,7 +1,6 @@
 using System;
 using System.Configuration;
-using System.Linq;
-using Norm;
+using MongoDB.Driver;
 
 namespace ProMongoRepository
 {

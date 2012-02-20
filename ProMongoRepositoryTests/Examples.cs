@@ -15,21 +15,21 @@ namespace ProMongoRepositoryTests
         {
             //The first connectionString that starts with mongodb will be used.
             var mongoRepository = new MongoRepository<User>();
-            mongoRepository.ConnectionString.ToString().Should().Be("mongodb://localhost/testdb?strict=true");
+            mongoRepository._connectionStringBuilder.ToString().Should().Be("mongodb://localhost/testdb?strict=true");
         }
 
         [Test]
         public void Using_Named_ConnectionString_From_App_or_Web_Config()
         {
             var mongoRepository = new MongoRepository<User>("MongoDBConnectionString");
-            mongoRepository.ConnectionString.ToString().Should().Be("mongodb://localhost/testdb?strict=true");
+            mongoRepository._connectionStringBuilder.ToString().Should().Be("mongodb://localhost/testdb?strict=true");
         }
 
         [Test]
         public void Passing_ConnectionString()
         {
             var mongoRepository = new MongoRepository<User>("mongodb://localhost/testdb?strict=true");
-            mongoRepository.ConnectionString.ToString().Should().Be("mongodb://localhost/testdb?strict=true");
+            mongoRepository._connectionStringBuilder.ToString().Should().Be("mongodb://localhost/testdb?strict=true");
         }
 
 
@@ -38,14 +38,14 @@ namespace ProMongoRepositoryTests
         {
             //User collection will be created if not exist.
             var mongoRepository = new MongoRepository<User>();
-            mongoRepository.CollectionName.Should().Be("User");
+            mongoRepository._collection.Name.Should().Be("User");
         }
 
         [Test]
         public void Overriding_Collection_Name()
         {
             var mongoRepository = new MongoRepository<User>(collection: "users");
-            mongoRepository.CollectionName.Should().Be("users");
+            mongoRepository._collection.Name.Should().Be("users");
         }
 
         [Test]
@@ -53,7 +53,7 @@ namespace ProMongoRepositoryTests
         {
             var mongoRepository = new MongoRepository<User>();
             var user = new User() {Name = "Basic_Save"};
-            mongoRepository.Save(user);
+            mongoRepository.Add(user);
         }
     }
 }

@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>ProMongoRepository</id>
+    <version>0.2</version>
+    <authors>Eric Polerecky</authors>
+    <owners>-</owners>
+    <projectUrl>https://github.com/detroitpro/ProMongoRepository</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Repository class for MongoDB</description>
+    <tags>MongoDB Repository</tags>
+    <dependencies>
+      <dependency id="Norm" version="0.9.8" />
+    </dependencies>
+  </metadata>
+</package>

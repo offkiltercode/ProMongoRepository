@@ -1,39 +1,42 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
-using Norm;
+using FluentMongo.Linq;
+using MongoDB.Bson;
+using MongoDB.Driver;
+using MongoDB.Driver.Builders;
 
 namespace ProMongoRepository
 {
-    public class MongoRepository<T> : IMongoRepository<T> where T : class, new()
+    public class MongoRepository<T> : IDisposable, IMongoRepository<T> where T : class, new()
     {
+        protected internal MongoServer _server;
+        protected internal readonly MongoDatabase _mongoDatabase;
+        protected internal MongoCollection<T> _collection;
+        protected internal ConnectionStringBuilder _connectionStringBuilder;
+        protected internal string _collectionName;
+
+
         public MongoRepository(string connectionStringName = "", string collection = "")
         {
-            ConnectionString = ConfigurationParser.LoadConfiguration(connectionStringName);
-            BuildCollection(collection);
+            _connectionStringBuilder = ConfigurationParser.LoadConfiguration(connectionStringName);
+            _collectionName = DetermineCollectionName(collection);
+            _server = MongoServer.Create(_connectionStringBuilder.ToString());
+            _mongoDatabase = _server.GetDatabase(_connectionStringBuilder.Database);
+            _collection = _mongoDatabase.GetCollection<T>(_collectionName);
         }
 
-        private void BuildCollection(string collection)
+
+        private string DetermineCollectionName(string collection)
         {
             if (!string.IsNullOrEmpty(collection))
             {
-                CollectionName = collection;
+                return collection;
             }
-            else
-            {
-                if (IsSubClassOfMongoRepository())
-                {
-                    CollectionName = GetBaseTypeGenericArgument(GetType()).Name;
-                }
-                else
-                {
-                    CollectionName = GetType().GetGenericArguments()[0].Name;
-                }
-            }
+            return IsSubClassOfMongoRepository() ? GetBaseTypeGenericArgument(GetType()).Name : GetType().GetGenericArguments()[0].Name;
+
         }
 
-        public static Type GetBaseTypeGenericArgument(Type type)
+        private static Type GetBaseTypeGenericArgument(Type type)
         {
             return (type.BaseType != null) ? type.BaseType.GetGenericArguments()[0] : null;
         }
@@ -42,14 +45,14 @@ namespace ProMongoRepository
         {
             var rawGeneric = typeof(MongoRepository<>);
             var subclass = GetType();
-            Console.WriteLine(subclass.Name);
-            if(subclass.Name == "MongoRepository`1")
+            //Console.WriteLine(subclass.Name);
+            if (subclass.Name == "MongoRepository`1")
             {
                 return false;
             }
             while (subclass != typeof(object))
             {
-                var cur = subclass.IsGenericType ? subclass.GetGenericTypeDefinition() : subclass;
+                var cur = subclass != null && subclass.IsGenericType ? subclass.GetGenericTypeDefinition() : subclass;
                 if (rawGeneric == cur)
                 {
                     return true;
@@ -59,168 +62,235 @@ namespace ProMongoRepository
             return false;
         }
 
-        //public ObjectId Id { get; set; }
-
-        public string CollectionName { get; set; }
-
-        public ConnectionStringBuilder ConnectionString { get; set; }
-
-        public virtual void Save(T instance)
+        //TODO: review the dispose code based on mongo server connection handling.
+        public void Dispose()
         {
-
-            using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
-            {
-                mongo.GetCollection<T>(CollectionName).Save(instance);
-            }
+            _server.Disconnect();
+            _server = null;
         }
 
-        public virtual void Save()
+        public IQueryable<T> Linq()
         {
-            using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
-            {
-                mongo.GetCollection<T>(CollectionName).Save(this as T);
-            }
+            return _collection.AsQueryable();
         }
 
-        public void Update(object spec, object newValues)
+        public IQueryable<T> GetMany(Func<T, bool> func)
         {
-            using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
-            {
-                mongo.GetCollection<T>(CollectionName).UpdateOne(spec, newValues);
-            }
+            return _collection.AsQueryable().Where(func).AsQueryable();
         }
 
-        public void UpdateAll(object spec, object newValues, bool upsert = false)
+        public void Add(T instance)
         {
-            using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
-            {
-                mongo.GetCollection<T>(CollectionName).Update(spec, newValues, true, upsert);
-            }
+            _collection.Insert(instance);
         }
 
-        public virtual T FindById(ObjectId id)
+        public void Update(T instance)
         {
-            using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
-            {
-                return mongo.GetCollection<T>(CollectionName).FindOne(new { _id = id });
-            }
+            //_collection.Update()
         }
 
-        public virtual T FindById(string id)
+        public T Get(ObjectId id)
         {
-            return FindById(new ObjectId(id));
+            return _collection.FindOneById(BsonValue.Create(id));
         }
 
-        public virtual T FindOne(object spec)
+        public T Get(Func<T, bool> func)
         {
-            using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
-            {
-                return mongo.GetCollection<T>(CollectionName).FindOne(spec);
-            }
+            return _collection.AsQueryable().Where(func).FirstOrDefault();
         }
 
-        public virtual T FindOne(Func<T, bool> func)
+        public T Get(string id)
         {
-            using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
-            {
-                return Enumerable.FirstOrDefault<T>(mongo.GetCollection<T>(CollectionName).AsQueryable().Where(func));
-            }
+            return _collection.FindOneById(BsonValue.Create(id));
         }
 
-        public virtual bool Contains(object spec)
+        public void RemoveAll()
         {
-            using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
-            {
-                var found = mongo.GetCollection<T>(CollectionName).Find(spec);
-                foreach (var item in found)
-                {
-
-                }
-                return (found.Count() > 0);
-            }
+            _collection.RemoveAll();
         }
 
-        public virtual IEnumerable<object> Distinct<TY>(string property)
+        public void Remove(string id)
         {
-            using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
-            {
-                return mongo.GetCollection<TY>(CollectionName).Distinct<object>(property);
-            }
+            var query = Query.EQ("_id", id.ToBson());
+            _collection.Remove(query);
         }
 
-        public virtual IEnumerable<T> Find(object spec)
+        public void Remove(ObjectId id)
         {
-            using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
-            {
-                return mongo.GetCollection<T>(CollectionName).Find(spec);
-            }
+            throw new NotImplementedException();
         }
 
-        public virtual IEnumerable<T> Find(Func<T, bool> func)
-        {
-            using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
-            {
-                return Enumerable.Where(mongo.GetCollection<T>(CollectionName).AsQueryable(), func);
-            }
-        }
 
-        public virtual IQueryable<T> Linq()
-        {
-            using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
-            {
-                var result = mongo.GetCollection<T>(CollectionName).AsQueryable();
-                return result;
-            }
-        }
 
-        public virtual void RemoveAll()
-        {
-            using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
-            {
-                mongo.GetCollection<T>(CollectionName).Delete(new { });
-            }
-        }
 
-        public virtual void Remove(object spec)
-        {
-            using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
-            {
-                var item = Find(spec);
-                mongo.GetCollection<T>(CollectionName).Delete(item);
-            }
-        }
 
-        public virtual void Remove(string id)
-        {
-            Remove(new ObjectId(id));
-        }
 
-        public virtual void Remove(ObjectId id)
-        {
-            using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
-            {
-                mongo.GetCollection<T>(CollectionName).Delete(new { id = id });
-            }
-        }
 
-        public IEnumerable<TYMappedType> MapReduce<TYMappedType>(string map, string reduce, string outputCollectioName)
-        {
-            using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
-            {
-                MapReduce mapReduce = mongo.Database.CreateMapReduce();
-                mapReduce.Execute(new MapReduceOptions(CollectionName)
-                                      {
-                                          Map = map,
-                                          Reduce = reduce,
-                                          Permanant = false,
-                                          OutputCollectionName = outputCollectioName
-                                      });
 
-                IQueryable<TYMappedType> collection =
-                    mongo.Database.GetCollection<TYMappedType>(outputCollectioName).AsQueryable();
 
-                return collection;
-            }
-        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        //public virtual void Save(T instance)
+        //{
+        //    //mongo.GetCollection<T>(CollectionName).Save(instance);
+
+        //}
+
+
+
+        //public void Update(object spec, object newValues)
+        //{
+        //    using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
+        //    {
+        //        .GetCollection<T>(CollectionName).UpdateOne(spec, newValues);
+        //    }
+        //}
+
+
+        //public void UpdateAll(object spec, object newValues, bool upsert = false)
+        //{
+        //    using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
+        //    {
+        //        mongo.GetCollection<T>(CollectionName).Update(spec, newValues, true, upsert);
+        //    }
+        //}
+
+        //public virtual T FindById(ObjectId id)
+        //{
+        //    return Collection.FindOneById(BsonValue.Create(id));
+        //}
+
+        //public virtual T FindById(string id)
+        //{
+        //    return FindById(new ObjectId(id));
+        //}
+
+        //public virtual T FindOne(object spec)
+        //{
+        //    return Collection.FindOne(new { author = "Kurt Vonnegut" });
+        //}
+
+        //public virtual T FindOne(Func<T, bool> func)
+        //{
+        //    using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
+        //    {
+        //        return Enumerable.FirstOrDefault<T>(mongo.GetCollection<T>(CollectionName).AsQueryable().Where(func));
+        //    }
+        //}
+
+        //public virtual bool Contains(object spec)
+        //{
+        //    using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
+        //    {
+        //        var found = mongo.GetCollection<T>(CollectionName).Find(spec);
+        //        foreach (var item in found)
+        //        {
+
+        //        }
+        //        return (found.Count() > 0);
+        //    }
+        //}
+
+        //public virtual IEnumerable<object> Distinct<TY>(string property)
+        //{
+        //    using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
+        //    {
+        //        return mongo.GetCollection<TY>(CollectionName).Distinct<object>(property);
+        //    }
+        //}
+
+        //public virtual IEnumerable<T> Find(object spec)
+        //{
+        //    using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
+        //    {
+        //        return mongo.GetCollection<T>(CollectionName).Find(spec);
+        //    }
+        //}
+
+        //public virtual IEnumerable<T> Find(Func<T, bool> func)
+        //{
+        //    using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
+        //    {
+        //        return Enumerable.Where(mongo.GetCollection<T>(CollectionName).AsQueryable(), func);
+        //    }
+        //}
+
+        //public virtual IQueryable<T> Linq()
+        //{
+        //    using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
+        //    {
+        //        var result = mongo.GetCollection<T>(CollectionName).AsQueryable();
+        //        return result;
+        //    }
+        //}
+
+        //public virtual void RemoveAll()
+        //{
+        //    using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
+        //    {
+        //        mongo.GetCollection<T>(CollectionName).Delete(new { });
+        //    }
+        //}
+
+        //public virtual void Remove(object spec)
+        //{
+        //    using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
+        //    {
+        //        var item = Find(spec);
+        //        mongo.GetCollection<T>(CollectionName).Delete(item);
+        //    }
+        //}
+
+        //public virtual void Remove(string id)
+        //{
+        //    Remove(new ObjectId(id));
+        //}
+
+        //public virtual void Remove(ObjectId id)
+        //{
+        //    using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
+        //    {
+        //        mongo.GetCollection<T>(CollectionName).Delete(new { id = id });
+        //    }
+        //}
+
+        //public IEnumerable<TYMappedType> MapReduce<TYMappedType>(string map, string reduce, string outputCollectioName)
+        //{
+        //    using (IMongo mongo = Mongo.Create(ConnectionString.ToString()))
+        //    {
+        //        MapReduce mapReduce = mongo.Database.CreateMapReduce();
+        //        mapReduce.Execute(new MapReduceOptions(CollectionName)
+        //                              {
+        //                                  Map = map,
+        //                                  Reduce = reduce,
+        //                                  Permanant = false,
+        //                                  OutputCollectionName = outputCollectioName
+        //                              });
+
+        //        IQueryable<TYMappedType> collection =
+        //            mongo.Database.GetCollection<TYMappedType>(outputCollectioName).AsQueryable();
+
+        //        return collection;
+        //    }
+        //}
+
     }
 }

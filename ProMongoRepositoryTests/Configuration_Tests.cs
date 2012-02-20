@@ -17,7 +17,7 @@ namespace ProMongoRepositoryTests
         public void Should_Default_To_Web_Config()
         {
             var mongoRepository = new MongoRepository<User>();
-            mongoRepository.ConnectionString.ToString().Should().Be("mongodb://localhost/testdb?strict=true");
+            mongoRepository._connectionStringBuilder.ToString().Should().Be("mongodb://localhost/testdb?strict=true");
             //mongoRepository.ConnectionString.Server.Should().Be("localhost");
         }
 
@@ -25,14 +25,14 @@ namespace ProMongoRepositoryTests
         public void Should_Load_By_Name()
         {
             var mongoRepository = new MongoRepository<User>("MongoDBConnectionString");
-            mongoRepository.ConnectionString.ToString().Should().Be("mongodb://localhost/testdb?strict=true");
+            mongoRepository._connectionStringBuilder.ToString().Should().Be("mongodb://localhost/testdb?strict=true");
         }
 
         [Test]
         public void Should_Load_By_Name_2()
         {
             var mongoRepository = new MongoRepository<User>("UsernameAndPassword");
-            mongoRepository.ConnectionString.ToString().Should().Be("mongodb://myUser:myPass@flame.mongohq.com:27055/DetroitStealthStartup");
+            mongoRepository._connectionStringBuilder.ToString().Should().Be("mongodb://myUser:myPass@flame.mongohq.com:27055/DetroitStealthStartup");
         }
 
 
@@ -40,7 +40,7 @@ namespace ProMongoRepositoryTests
         public void Should_Accept_Passed_In_ConnectionString()
         {
             var mongoRepository = new MongoRepository<User>("mongodb://passed:to@flame.mongohq.com:27055/repository");
-            mongoRepository.ConnectionString.ToString().Should().Be("mongodb://passed:to@flame.mongohq.com:27055/repository");
+            mongoRepository._connectionStringBuilder.ToString().Should().Be("mongodb://passed:to@flame.mongohq.com:27055/repository");
         }
         
 

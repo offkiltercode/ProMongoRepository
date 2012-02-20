@@ -1,30 +1,23 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using Norm;
+using MongoDB.Bson;
 
 namespace ProMongoRepository
 {
     public interface IMongoRepository<T> where T : class
     {
-        void Save(T instance);
-        void Save();
-        void Update(object spec, object newValues);
-        void UpdateAll(object spec, object newValues, bool upsert = false);
-        T FindById(ObjectId id);
-        T FindById(string id);
-        T FindOne(object spec);
-        T FindOne(Func<T, bool> func);
-        IEnumerable<object > Distinct<TY>(string property);
-        IEnumerable<T> Find(object spec);
-        IEnumerable<T> Find(Func<T, bool> func);
         IQueryable<T> Linq();
+        IQueryable<T> GetMany(Func<T, bool> func);
+
+        void Add(T instance);
+        void Update(T instance);
+      
+        T Get(ObjectId id);
+        T Get(Func<T, bool> func);
+        T Get(string id);
+        
         void RemoveAll();
-        void Remove(object spec);
         void Remove(string id);
         void Remove(ObjectId id);
-        IEnumerable<TYMappedType> MapReduce<TYMappedType>(string map, string reduce, string outputCollectioName);
-        ConnectionStringBuilder ConnectionString { get; set; }
-        string CollectionName { get; set; }
     }
 }

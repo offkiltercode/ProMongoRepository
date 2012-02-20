@@ -1,10 +1,9 @@
-using Norm;
+using MongoDB.Bson;
 
 namespace ProMongoRepositoryTests.TestModel
 {
     public class Entity
     {
-        [MongoIdentifier]
         public ObjectId Id { get; set; } 
     }
 }

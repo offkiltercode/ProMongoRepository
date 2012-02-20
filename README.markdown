@@ -2,7 +2,7 @@
 
 First; there is nothing "pro" about it. It's simply my (@detroitpro) base Mongo Repository class. 
 
-ProMongoRepository sits on top of Norm and provides a simple repository pattern.
+ProMongoRepository sits on top of the offical C# driver and FluentMongo to provide a simple repository pattern.
 
 ## Usage
 
